@@ -150,4 +150,31 @@ public class PerceptronClassifier implements Classifier {
 		
 		return buffer.substring(0, buffer.length()-1);
 	}
-}
+
+	// to test the classifier: 
+	// public static void main(String[] args){ 
+	// 	PerceptronClassifier cl = new PerceptronClassifier(); 
+	// 	DataSet someData = new DataSet("data/diabetesDecimalLabel.csv", 0); 
+
+	// 	ArrayList<Example> arrData = someData.getData(); 
+		
+	// 	double allAccuracy = 0.0;
+	// 	// runs classifier 100 times to find accuracy 
+	// 	for (int j = 0; j < 100; j++) {
+	// 		double correctCount = 0.0;
+	// 		for (Example e : arrData) {
+	// 			//System.out.println("example: " + e);
+	// 			double prediction = cl.classify(e);
+	// 			if (prediction == e.getLabel()) {
+	// 				//System.out.println("in here");
+	// 				correctCount += 1;
+	// 			}
+	// 		}
+	// 		double currentAccuracy = correctCount / arrData.size();
+	// 		allAccuracy += currentAccuracy;
+	// 	}
+	// 		double avg = allAccuracy / 100;
+	// 		System.out.println("average accuracy: " + avg);
+	// 	}
+	}
+

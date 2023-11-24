@@ -83,6 +83,8 @@ public class PerceptronClassifier implements Classifier {
 				}
 			}
 		}
+		System.out.println("the weights are: " + weights);
+		System.out.println("the bias is: " + b);
 	}
 
 	@Override
@@ -117,12 +119,13 @@ public class PerceptronClassifier implements Classifier {
 	protected static double getPrediction(Example e, HashMap<Integer, Double> w, double inputB){
 		double sum = getDistanceFromHyperplane(e,w,inputB);
 
+
+		// we are going to have to check this, I am al ittle confused as of 
+		// when would we predict diabetes and when we wouldn't 
 		if( sum > 0 ){
 			return 1.0;
-		}else if( sum < 0 ){
-			return -1.0;
-		}else{
-			return 0;
+		}else { 
+			return 0.0;
 		}
 	}
 	
@@ -151,30 +154,36 @@ public class PerceptronClassifier implements Classifier {
 		return buffer.substring(0, buffer.length()-1);
 	}
 
-	// to test the classifier: 
-	// public static void main(String[] args){ 
-	// 	PerceptronClassifier cl = new PerceptronClassifier(); 
-	// 	DataSet someData = new DataSet("data/diabetesDecimalLabel.csv", 0); 
+	public static void main(String[] args){ 
+		PerceptronClassifier cl = new PerceptronClassifier(); 
+		DataSet someData = new DataSet("data/diabetesDecimalLabel.csv", 0); 
+		cl.train(someData);
+		// Example fist = someData.getData().get(0); 
+		// System.out.println(cl.classify(fist));
 
-	// 	ArrayList<Example> arrData = someData.getData(); 
+		ArrayList<Example> arrData = someData.getData(); 
 		
-	// 	double allAccuracy = 0.0;
-	// 	// runs classifier 100 times to find accuracy 
-	// 	for (int j = 0; j < 100; j++) {
-	// 		double correctCount = 0.0;
-	// 		for (Example e : arrData) {
-	// 			//System.out.println("example: " + e);
-	// 			double prediction = cl.classify(e);
-	// 			if (prediction == e.getLabel()) {
-	// 				//System.out.println("in here");
-	// 				correctCount += 1;
-	// 			}
-	// 		}
-	// 		double currentAccuracy = correctCount / arrData.size();
-	// 		allAccuracy += currentAccuracy;
-	// 	}
-	// 		double avg = allAccuracy / 100;
-	// 		System.out.println("average accuracy: " + avg);
-	// 	}
+		double allAccuracy = 0.0;
+		// runs classifier 100 times to find accuracy 
+		for (int j = 0; j < 100; j++) {
+			double correctCount = 0.0;
+			for (Example e : arrData) {
+				//System.out.println("example: " + e);
+				double prediction = cl.classify(e);
+				if (prediction != 1.0){
+					System.out.println("the prediction: " + prediction);
+				}
+
+				if (prediction == e.getLabel()) {
+					//System.out.println("in here");
+					correctCount += 1;
+				}
+			}
+			double currentAccuracy = correctCount / arrData.size();
+			allAccuracy += currentAccuracy;
+		}
+			double avg = allAccuracy / 100;
+			System.out.println("average accuracy: " + avg);
+		}
 	}
 

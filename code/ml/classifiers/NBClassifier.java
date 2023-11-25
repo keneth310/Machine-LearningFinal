@@ -67,6 +67,7 @@ public class NBClassifier implements Classifier {
             // we want to add all the labels to the label features count
             this.labelFeaturesCount.put(label, new HashMap<>());
         }
+        
 
         // go through all examples in data
         for (Example example: examples){
@@ -97,6 +98,8 @@ public class NBClassifier implements Classifier {
                 this.labelFeaturesCount.put(currLabel, featureCount);
             }
         }
+        System.out.println("here is label count: " + labelCount);
+        System.out.println("here is label feature count: " + labelFeaturesCount);
     }
 
     /**
@@ -183,13 +186,14 @@ public class NBClassifier implements Classifier {
         // for all of the possible labels, we find probability for that example
         for (Double label : data.getLabels()){ 
             double logProb = getLogProb(example, label); 
-
+            // System.out.println("current label" + label + "current log prob: " + logProb);
             // keep track of max probability and label for that
             if (logProb > maxProb){ 
                 maxProb = logProb; 
                 prediction = label; 
             }
         }
+        
         return prediction; 
     }
 	
@@ -212,9 +216,10 @@ public class NBClassifier implements Classifier {
         // DataSetSplit dataSplit = cv.getValidationSet(1);
         // System.out.println("dataSetSplit size:" + dataSplit.getTest().getData().size());
         DataSetSplit dataSplit = data.split(.8);
-        cl.setUseOnlyPositiveFeatures(false);
+        cl.setUseOnlyPositiveFeatures(true);
         cl.setLambda(0.01);
         cl.train(dataSplit.getTrain());
+        System.out.println("the labels: " + dataSplit.getTest().getLabels());
 
         // from test set 
         // Example first = dataSplit.getTest().getData().get(0);
@@ -226,16 +231,22 @@ public class NBClassifier implements Classifier {
         ArrayList<Example> arrData = dataSplit.getTrain().getData();
 
         double correctCount = 0.0;
-			for (Example e : arrData) {
-				//System.out.println("example: " + e);
-				double prediction = cl.classify(e);
-				if (prediction == e.getLabel()) {
-					//System.out.println("in here");
-					correctCount += 1;
-				}
-			}
-			double currentAccuracy = correctCount / arrData.size();
-			System.out.println("the accuracy: " + currentAccuracy);
+        for (Example e : arrData) {
+            //System.out.println("example: " + e);
+            double prediction = cl.classify(e);
+            if (prediction == e.getLabel()) {
+                //System.out.println("in here");
+                correctCount += 1;
+            } 
+            // else { 
+            //     System.out.print("wrong prediction: " + prediction + "\n"); 
+            // }
+        }
+        double currentAccuracy = correctCount / arrData.size();
+        System.out.println("the accuracy: " + currentAccuracy);
+
+
+
         // *** EXPERIMENTS- determining best lambda accuracy ***
         // ArrayList<ArrayList<Double>> arr = new ArrayList<>();
         

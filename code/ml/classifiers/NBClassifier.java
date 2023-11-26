@@ -9,6 +9,8 @@ import ml.data.CrossValidationSet;
 import ml.data.DataSet;
 import ml.data.DataSetSplit;
 import ml.data.Example;
+import ml.data.ExampleNormalizer;
+import ml.data.FeatureNormalizer;
 
 /**
 * A classifier that implements the Naive Bayes machine learning algorithm. 
@@ -57,6 +59,14 @@ public class NBClassifier implements Classifier {
         ArrayList<Example> examples = data.getData(); 
         this.data = data; 
         Collections.shuffle(examples);
+        ArrayList<Integer> numbers = new ArrayList<>();
+        numbers.add(3);
+        numbers.add(13);
+        numbers.add(14);
+        numbers.add(15);
+        numbers.add(18);
+        numbers.add(19);
+        numbers.add(20);
         
         // for all labels, create a 2 hashmaps, the count and feature count
         for (Double label : data.getLabels()){ 
@@ -81,17 +91,23 @@ public class NBClassifier implements Classifier {
             // save features that appear with that label in that example
             for (Integer feature : example.getFeatureSet()){
                 HashMap<Integer, Integer> featureCount = this.labelFeaturesCount.get(currLabel);
+                // if feature is not in the hashmap
+                if (!numbers.contains(feature)) { 
+                    if (example.getFeature(feature) > 0) {
+                        if (!featureCount.containsKey(feature)){
+                            featureCount.put(feature, 1);
+                        }
+        
+                        // if feature is in the hashmap 
+                        else{
+                            // if the value is not 0 for those features 
+                            System.out.println("some count");
+                            int count = featureCount.get(feature); 
+                            count += 1; 
+                            featureCount.put(feature, count); 
+                        }
+                    } 
 
-                // if feature is not in the hashmap 
-                if (!featureCount.containsKey(feature)){
-                    featureCount.put(feature, 1);
-                }
-
-                // if feature is in the hashmap 
-                else{
-                    int count = featureCount.get(feature); 
-                    count += 1; 
-                    featureCount.put(feature, count); 
                 }
 
                 // update the hashmap of that label 
@@ -211,15 +227,19 @@ public class NBClassifier implements Classifier {
      */
     public static void main(String[] args){
         NBClassifier cl = new NBClassifier(); 
+        // FeatureNormalizer normalizeFeature = new FeatureNormalizer();
+        // ExampleNormalizer normalizeExample = new ExampleNormalizer();
 		DataSet data = new DataSet("data/diabetesDecimalLabel.csv", 0); // 0 for csv file 
         // CrossValidationSet cv = new CrossValidationSet(data, 10);
         // DataSetSplit dataSplit = cv.getValidationSet(1);
         // System.out.println("dataSetSplit size:" + dataSplit.getTest().getData().size());
         DataSetSplit dataSplit = data.split(.8);
         cl.setUseOnlyPositiveFeatures(true);
-        cl.setLambda(0.01);
+        cl.setLambda(0.001);
+        // normalizeFeature.preprocessTrain(dataSplit.getTrain()); // normalize train on the feature
+        // normalizeExample.preprocessTrain(dataSplit.getTrain());
         cl.train(dataSplit.getTrain());
-        System.out.println("the labels: " + dataSplit.getTest().getLabels());
+        System.out.println("the labels: " + dataSplit.getTrain().getLabels());
 
         // from test set 
         // Example first = dataSplit.getTest().getData().get(0);
@@ -227,11 +247,11 @@ public class NBClassifier implements Classifier {
         // System.out.println("the example: " + first);
         // System.out.println("the label: " + first.getLabel());
         // System.out.println("the prediction: " + someClassifier.classify(first));
-
-        ArrayList<Example> arrData = dataSplit.getTrain().getData();
+        ArrayList<Example> arrData = dataSplit.getTest().getData();
 
         double correctCount = 0.0;
         for (Example e : arrData) {
+            
             //System.out.println("example: " + e);
             double prediction = cl.classify(e);
             if (prediction == e.getLabel()) {

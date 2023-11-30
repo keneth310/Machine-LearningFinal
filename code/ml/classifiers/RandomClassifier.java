@@ -28,4 +28,6 @@ public class RandomClassifier implements Classifier{
 	public double confidence(Example example) {
 		return 1.0; // super confident!
 	}
+
+	
 }

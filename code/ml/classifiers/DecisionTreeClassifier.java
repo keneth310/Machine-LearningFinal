@@ -9,6 +9,8 @@ import ml.data.CrossValidationSet;
 import ml.data.DataSet;
 import ml.data.DataSetSplit;
 import ml.data.Example;
+import ml.data.ExampleNormalizer;
+import ml.data.FeatureNormalizer;
 import ml.utils.HashMapCounter;
 
 /**
@@ -250,7 +252,7 @@ public class DecisionTreeClassifier implements Classifier{
 	}	
 
 	public static void main(String[] args) {
-		DataSet someData = new DataSet("data/wines.train", DataSet.TEXTFILE); // make new dataset with simple vars
+		DataSet someData = new DataSet("data/diabetesDecimalLabel.csv", 0); 
 		CrossValidationSet crossValidation = new CrossValidationSet(someData, 10, true);
 		DecisionTreeClassifier dTree= new DecisionTreeClassifier();
 		dTree.setDepthLimit(5);
@@ -259,12 +261,16 @@ public class DecisionTreeClassifier implements Classifier{
 		ArrayList<Double> splitAvgs = new ArrayList<Double>();
 		for (int i = 0; i < crossValidation.getNumSplits(); i++){
 			DataSetSplit dataSplit = crossValidation.getValidationSet(i);
+			FeatureNormalizer featureNormalizer = new FeatureNormalizer();
+			ExampleNormalizer exampleNormalizer = new ExampleNormalizer();
+			featureNormalizer.preprocessTrain(dataSplit.getTrain());
+			exampleNormalizer.preprocessTrain(dataSplit.getTrain());
 			dTree.train(dataSplit.getTrain()); // training data
 			double allAccuracy = 0.0;
 			// runs classifier 100 times to find accuracy 
 			for (int j = 0; j < 100; j++) {
 				double correctCount = 0.0;
-				for (Example e : dataSplit.getTest().getData()) {
+				for (Example e : dataSplit.getTrain().getData()) {
 					//System.out.println("example: " + e);
 					double prediction =dTree.classify(e);
 					if (prediction == e.getLabel()) {
@@ -272,19 +278,20 @@ public class DecisionTreeClassifier implements Classifier{
 						correctCount += 1;
 					}
 				}
-				double currentAccuracy = correctCount / dataSplit.getTest().getData().size();
+				double currentAccuracy = correctCount / dataSplit.getTrain().getData().size();
 				allAccuracy += currentAccuracy;
 			}
 			double avg = allAccuracy / 100;
 			splitAvgs.add(avg); // will hold the avg accuragy from thr ith split 
+			break;
 		}
 		System.out.println("splitAvgs: " + splitAvgs);
-		// uncode this when you have more than one fold
-        double sumAvgs = 0.0;
-        for (int i = 0; i < splitAvgs.size(); i++) {
-            sumAvgs += splitAvgs.get(i);
-        }
-        System.out.println(sumAvgs / crossValidation.getNumSplits());
+		// // uncode this when you have more than one fold
+        // double sumAvgs = 0.0;
+        // for (int i = 0; i < splitAvgs.size(); i++) {
+        //     sumAvgs += splitAvgs.get(i);
+        // }
+        // System.out.println(sumAvgs / crossValidation.getNumSplits());
 	}
 }
 

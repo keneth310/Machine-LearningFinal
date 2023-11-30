@@ -100,53 +100,42 @@ public class OVAClassifier implements Classifier {
 	}
 
 	public static void main(String[] args) {
-		DataSet someData = new DataSet("data/wines.train", DataSet.TEXTFILE); // make new dataset with simple vars
-		// CrossValidationSet crossValidation = new CrossValidationSet(someData, 10, true);
+		DataSet someData = new DataSet("data/diabetesDecimalLabel.csv", DataSet.CSVFILE); // make new dataset with simple vars
+		CrossValidationSet crossValidation = new CrossValidationSet(someData, 10, true);
 		ClassifierFactory cl = new ClassifierFactory(0, 3);
 		OVAClassifier ovacl = new OVAClassifier(cl);
-       	ovacl.train(someData);
-		// DecisionTreeClassifier dTree = cl.getClassifier();
-		ovacl.toString();
-		// Classifier classifier = cl.getClassifier();
-		// DecisionTreeClassifier dTree = classifier.;
 
-		// train first 
-		// data.get all labels and get 10, 
-		// build the tree on that feature, print that one, and then set depth limit of 3
-		// 
-		
-
-		// run for the number of splits 
-	// 	ArrayList<Double> splitAvgs = new ArrayList<Double>();
-	// 	for (int i = 0; i < crossValidation.getNumSplits(); i++){
-	// 		DataSetSplit dataSplit = crossValidation.getValidationSet(i);
-	// 		ovacl.train(dataSplit.getTrain()); // training data
-	// 		double allAccuracy = 0.0;
-	// 		// runs classifier 100 times to find accuracy 
-	// 		for (int j = 0; j < 100; j++) {
-	// 			double correctCount = 0.0;
-	// 			for (Example e : dataSplit.getTest().getData()) {
-	// 				//System.out.println("example: " + e);
-	// 				double prediction = ovacl.classify(e);
-	// 				if (prediction == e.getLabel()) {
-	// 					//System.out.println("in here");
-	// 					correctCount += 1;
-	// 				}
-	// 			}
-	// 			double currentAccuracy = correctCount / dataSplit.getTest().getData().size();
-	// 			allAccuracy += currentAccuracy;
-	// 		}
-	// 		double avg = allAccuracy / 100;
-	// 		splitAvgs.add(avg); // will hold the avg accuragy from thr ith split 
-	// 	}
-	// 	System.out.println("splitAvgs: " + splitAvgs);
-	// 	// uncode this when you have more than one fold
-    //     double sumAvgs = 0.0;
-    //     for (int i = 0; i < splitAvgs.size(); i++) {
-    //         sumAvgs += splitAvgs.get(i);
-    //     }
-    //     System.out.println(sumAvgs / crossValidation.getNumSplits());
-	// }
+		//run for the number of splits 
+		ArrayList<Double> splitAvgs = new ArrayList<Double>();
+		for (int i = 0; i < crossValidation.getNumSplits(); i++){
+			DataSetSplit dataSplit = crossValidation.getValidationSet(i);
+			ovacl.train(dataSplit.getTrain()); // training data
+			double allAccuracy = 0.0;
+			// runs classifier 100 times to find accuracy 
+			for (int j = 0; j < 100; j++) {
+				double correctCount = 0.0;
+				for (Example e : dataSplit.getTest().getData()) {
+					//System.out.println("example: " + e);
+					double prediction = ovacl.classify(e);
+					if (prediction == e.getLabel()) {
+						//System.out.println("in here");
+						correctCount += 1;
+					}
+				}
+				double currentAccuracy = correctCount / dataSplit.getTest().getData().size();
+				allAccuracy += currentAccuracy;
+			}
+			double avg = allAccuracy / 100;
+			splitAvgs.add(avg); // will hold the avg accuragy from thr ith split 
+			break;
+		}
+		System.out.println("splitAvgs: " + splitAvgs);
+		// // uncode this when you have more than one fold
+        // double sumAvgs = 0.0;
+        // for (int i = 0; i < splitAvgs.size(); i++) {
+        //     sumAvgs += splitAvgs.get(i);
+        // }
+        // System.out.println(sumAvgs / crossValidation.getNumSplits());
 	}
 }
 

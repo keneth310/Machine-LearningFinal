@@ -6,8 +6,12 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.Random;
 
+import ml.data.CrossValidationSet;
 import ml.data.DataSet;
+import ml.data.DataSetSplit;
 import ml.data.Example;
+import ml.data.ExampleNormalizer;
+import ml.data.FeatureNormalizer;
 
 /**
  * Basic perceptron classifier
@@ -83,8 +87,8 @@ public class PerceptronClassifier implements Classifier {
 				}
 			}
 		}
-		System.out.println("the weights are: " + weights);
-		System.out.println("the bias is: " + b);
+		// System.out.println("the weights are: " + weights);
+		// System.out.println("the bias is: " + b);
 	}
 
 	@Override
@@ -119,13 +123,12 @@ public class PerceptronClassifier implements Classifier {
 	protected static double getPrediction(Example e, HashMap<Integer, Double> w, double inputB){
 		double sum = getDistanceFromHyperplane(e,w,inputB);
 
-
-		// we are going to have to check this, I am al ittle confused as of 
-		// when would we predict diabetes and when we wouldn't 
 		if( sum > 0 ){
 			return 1.0;
-		}else { 
-			return 0.0;
+		}else if( sum < 0 ){
+			return -1.0;
+		}else{
+			return 0;
 		}
 	}
 	
@@ -157,33 +160,42 @@ public class PerceptronClassifier implements Classifier {
 	public static void main(String[] args){ 
 		PerceptronClassifier cl = new PerceptronClassifier(); 
 		DataSet someData = new DataSet("data/diabetesDecimalLabel.csv", 0); 
-		cl.train(someData);
-		// Example fist = someData.getData().get(0); 
-		// System.out.println(cl.classify(fist));
-
-		ArrayList<Example> arrData = someData.getData(); 
-		
-		double allAccuracy = 0.0;
-		// runs classifier 100 times to find accuracy 
-		for (int j = 0; j < 100; j++) {
-			double correctCount = 0.0;
-			for (Example e : arrData) {
-				//System.out.println("example: " + e);
-				double prediction = cl.classify(e);
-				if (prediction != 1.0){
-					System.out.println("the prediction: " + prediction);
+		CrossValidationSet crossValidation = new CrossValidationSet(someData, 10, true);
+	
+		// run for the number of splits 
+		ArrayList<Double> splitAvgs = new ArrayList<Double>();
+		for (int i = 0; i < crossValidation.getNumSplits(); i++){
+			DataSetSplit dataSplit = crossValidation.getValidationSet(i);
+			//preproces data
+			FeatureNormalizer featureNormalizer = new FeatureNormalizer();
+			ExampleNormalizer exampleNormalizer = new ExampleNormalizer();
+			featureNormalizer.preprocessTrain(dataSplit.getTrain());
+			exampleNormalizer.preprocessTrain(dataSplit.getTrain());
+			cl.train(dataSplit.getTrain()); 
+			double allAccuracy = 0.0;
+			// runs classifier 100 times to find accuracy 
+			for (int j = 0; j < 100; j++) {
+				double correctCount = 0.0;
+				for (Example e : dataSplit.getTrain().getData()) {
+					double prediction = cl.classify(e);
+					if (prediction == e.getLabel()) {
+						correctCount += 1;
+					} 
 				}
-
-				if (prediction == e.getLabel()) {
-					//System.out.println("in here");
-					correctCount += 1;
-				}
+				double currentAccuracy = correctCount / dataSplit.getTrain().getData().size();
+				allAccuracy += currentAccuracy;
 			}
-			double currentAccuracy = correctCount / arrData.size();
-			allAccuracy += currentAccuracy;
-		}
 			double avg = allAccuracy / 100;
-			System.out.println("average accuracy: " + avg);
+			splitAvgs.add(avg); // will hold the avg accuragy from thr ith split 
+			break;
 		}
+		System.out.println(splitAvgs);
+        // double sumAvgs = 0.0;
+        // for (int i = 0; i < splitAvgs.size(); i++) {
+        //     sumAvgs += splitAvgs.get(i);
+        // }
+        // System.out.println(sumAvgs / crossValidation.getNumSplits());	
+		// }
 	}
+}
 

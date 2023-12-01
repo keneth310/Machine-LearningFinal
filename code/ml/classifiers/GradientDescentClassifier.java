@@ -3,6 +3,8 @@ package ml.classifiers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Random;
 
@@ -183,12 +185,12 @@ public class GradientDescentClassifier implements Classifier {
 				lossSum += calcLoss(this.chosenLoss, e.getLabel(), prediction);
 
 				for (Integer featureIndex : e.getFeatureSet()) {
-						double oldWeight = weights.get(featureIndex);
-						double featureValue = e.getFeature(featureIndex);
-						double newWeight = oldWeight
-								+ this.eta * ((label * featureValue * lossFunc(this.chosenLoss, label, prediction))
-										- (lamda * regularize(this.chosenRegularization, oldWeight)));
-						weights.put(featureIndex, newWeight);
+					double oldWeight = weights.get(featureIndex);
+					double featureValue = e.getFeature(featureIndex);
+					double newWeight = oldWeight
+							+ this.eta * ((label * featureValue * lossFunc(this.chosenLoss, label, prediction))
+									- (lamda * regularize(this.chosenRegularization, oldWeight)));
+					weights.put(featureIndex, newWeight);
 				}
 
 				b += this.eta * ((label * 1 * lossFunc(this.chosenLoss, label, prediction))

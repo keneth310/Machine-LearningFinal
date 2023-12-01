@@ -52,7 +52,7 @@ public class GradientDescentClassifier implements Classifier {
 	 * @param int
 	 */
 	public void setLoss(int x) {
-		// soemthing here (math?) what does (based on constants mean here)
+		// soemthing here what does (based on constants mean here)
 		if (x == EXPONENTIAL_LOSS) {
 			this.chosenLoss = 0; // will be an exponential loss function
 		} else {
@@ -168,7 +168,7 @@ public class GradientDescentClassifier implements Classifier {
 		this.iterations = iterations;
 	}
 
-	public void train(DataSet data) {
+	public void train(DataSet data, int featureToRemove) {
 		initializeWeights(data.getAllFeatureIndices());
 
 		ArrayList<Example> training = (ArrayList<Example>) data.getData().clone();
@@ -177,34 +177,23 @@ public class GradientDescentClassifier implements Classifier {
 			double lossSum = 0.0;
 
 			for (Example e : training) {
+				e.removeFeature(featureToRemove);
 				double label = e.getLabel();
 				double prediction = getDistanceFromHyperplane(e, weights, b);
 				lossSum += calcLoss(this.chosenLoss, e.getLabel(), prediction);
-				// update the weights
-				// for( Integer featureIndex: weights.keySet() ){
-				// System.out.println("------------------------------------------");
-				// System.out.println("current example: " + e);
 
 				for (Integer featureIndex : e.getFeatureSet()) {
-					double oldWeight = weights.get(featureIndex);
-					double featureValue = e.getFeature(featureIndex);
-					double newWeight = oldWeight
-							+ this.eta * ((label * featureValue * lossFunc(this.chosenLoss, label, prediction))
-									- (lamda * regularize(this.chosenRegularization, oldWeight)));
-					// System.out.println("loss function: " + lossFunc(this.chosenLoss, label,
-					// prediction));
-					// System.out.println("regularization: " +
-					// lamda*regularize(this.chosenRegulization, oldWeight));
-					// System.out.println("newWeight:" + newWeight);
-					weights.put(featureIndex, newWeight);
-					// System.out.println("weight hash:" + weights);
+						double oldWeight = weights.get(featureIndex);
+						double featureValue = e.getFeature(featureIndex);
+						double newWeight = oldWeight
+								+ this.eta * ((label * featureValue * lossFunc(this.chosenLoss, label, prediction))
+										- (lamda * regularize(this.chosenRegularization, oldWeight)));
+						weights.put(featureIndex, newWeight);
 				}
-				// update b, regt did with weightes larize bias as u
+
 				b += this.eta * ((label * 1 * lossFunc(this.chosenLoss, label, prediction))
 						- (this.lamda * regularize(this.chosenRegularization, b)));
-				// System.out.println("updated bias: " + b);
 			}
-			System.out.println(lossSum);
 		}
 	}
 
@@ -298,8 +287,31 @@ public class GradientDescentClassifier implements Classifier {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		GradientDescentClassifier gdescent = new GradientDescentClassifier();
-		DataSet data = new DataSet("data/diabetesDecimalLabel.csv", 0); // 0 for csv file
+		DataSet data = new DataSet("data/diabetesDecimalLabel.csv", 0);
+		// Collins is cooking
+		int totalFeatures = data.getAllFeatureIndices().size();
+		List<Double> accuracies = new ArrayList<Double>();
+
+		for (Integer indexToRemove: data.getFeatureMap().keySet()){ 
+			DataSet someCopy = new DataSet(data.getFeatureMap()); // copy of the original data set 
+			GradientDescentClassifier gdescent = new GradientDescentClassifier();
+			gdescent.train(someCopy, indexToRemove);
+			
+		}
+		
+		
+
+
+
+
+		
+
+
+
+
+
+
+
 		CrossValidationSet crossValidation = new CrossValidationSet(data, 10, true);
 		gdescent.setLoss(HINGE_LOSS);
 		gdescent.setIterations(30);
@@ -312,7 +324,7 @@ public class GradientDescentClassifier implements Classifier {
 		for (int i = 0; i < crossValidation.getNumSplits(); i++) {
 			DataSetSplit dataSplit = crossValidation.getValidationSet(i);
 
-			// preproces data
+			// preprocess data
 			FeatureNormalizer featureNormalizer = new FeatureNormalizer();
 			ExampleNormalizer exampleNormalizer = new ExampleNormalizer();
 			featureNormalizer.preprocessTrain(dataSplit.getTrain());
@@ -335,7 +347,7 @@ public class GradientDescentClassifier implements Classifier {
 			}
 			double avg = allAccuracy / 100;
 			splitAvgs.add(avg); // will hold the avg accuragy from thr ith split
-			break;
+			break; // remove when want to get total fold averages
 		}
 		System.out.println(splitAvgs);
 		// double sumAvgs = 0.0;

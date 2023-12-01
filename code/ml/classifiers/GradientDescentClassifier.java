@@ -290,66 +290,52 @@ public class GradientDescentClassifier implements Classifier {
 		DataSet data = new DataSet("data/diabetesDecimalLabel.csv", 0);
 		// Collins is cooking
 		int totalFeatures = data.getAllFeatureIndices().size();
-		List<Double> accuracies = new ArrayList<Double>();
+		//List<Double> accuracies = new ArrayList<Double>();
 
 		for (Integer indexToRemove: data.getFeatureMap().keySet()){ 
 			DataSet someCopy = new DataSet(data.getFeatureMap()); // copy of the original data set 
 			GradientDescentClassifier gdescent = new GradientDescentClassifier();
-			gdescent.train(someCopy, indexToRemove);
 			
-		}
-		
-		
-
-
-
-
-		
-
-
-
-
-
-
-
-		CrossValidationSet crossValidation = new CrossValidationSet(data, 10, true);
-		gdescent.setLoss(HINGE_LOSS);
-		gdescent.setIterations(30);
-		// gdescent.setEta(0.01);
-		// gdescent.setLamda(0.05);
-		gdescent.setRegularization(NO_REGULARIZATION);
-
-		// run for the number of splits
-		ArrayList<Double> splitAvgs = new ArrayList<Double>();
-		for (int i = 0; i < crossValidation.getNumSplits(); i++) {
-			DataSetSplit dataSplit = crossValidation.getValidationSet(i);
-
-			// preprocess data
-			FeatureNormalizer featureNormalizer = new FeatureNormalizer();
-			ExampleNormalizer exampleNormalizer = new ExampleNormalizer();
-			featureNormalizer.preprocessTrain(dataSplit.getTrain());
-			exampleNormalizer.preprocessTrain(dataSplit.getTrain());
-
-			gdescent.train(dataSplit.getTrain());
-			double allAccuracy = 0.0;
-
-			// runs classifier 100 times to find accuracy
-			for (int j = 0; j < 100; j++) {
-				double correctCount = 0.0;
-				for (Example e : dataSplit.getTrain().getData()) {
-					double prediction = gdescent.classify(e);
-					if (prediction == e.getLabel()) {
-						correctCount += 1;
+			CrossValidationSet crossValidation = new CrossValidationSet(data, 10, true);
+			gdescent.setLoss(HINGE_LOSS);
+			gdescent.setIterations(30);
+			// gdescent.setEta(0.01);
+			// gdescent.setLamda(0.05);
+			gdescent.setRegularization(NO_REGULARIZATION);
+	
+			// run for the number of splits
+			ArrayList<Double> splitAvgs = new ArrayList<Double>();
+			for (int i = 0; i < crossValidation.getNumSplits(); i++) {
+				DataSetSplit dataSplit = crossValidation.getValidationSet(i);
+	
+				// preprocess data
+				FeatureNormalizer featureNormalizer = new FeatureNormalizer();
+				ExampleNormalizer exampleNormalizer = new ExampleNormalizer();
+				featureNormalizer.preprocessTrain(dataSplit.getTrain());
+				exampleNormalizer.preprocessTrain(dataSplit.getTrain());
+			
+				gdescent.train(someCopy, indexToRemove);
+			
+				double allAccuracy = 0.0;
+	
+				// runs classifier 100 times to find accuracy
+				for (int j = 0; j < 100; j++) {
+					double correctCount = 0.0;
+					for (Example e : dataSplit.getTrain().getData()) {
+						double prediction = gdescent.classify(e);
+						if (prediction == e.getLabel()) {
+							correctCount += 1;
+						}
 					}
+					double currentAccuracy = correctCount / dataSplit.getTrain().getData().size();
+					allAccuracy += currentAccuracy;
 				}
-				double currentAccuracy = correctCount / dataSplit.getTrain().getData().size();
-				allAccuracy += currentAccuracy;
+				double avg = allAccuracy / 100;
+				splitAvgs.add(avg); // will hold the avg accuragy from thr ith split
+				break; // remove when want to get total fold averages
 			}
-			double avg = allAccuracy / 100;
-			splitAvgs.add(avg); // will hold the avg accuragy from thr ith split
-			break; // remove when want to get total fold averages
+			//System.out.println("current average without index: " + indexToRemove + " is: "+  splitAvgs);
 		}
-		System.out.println(splitAvgs);
 		// double sumAvgs = 0.0;
 		// for (int i = 0; i < splitAvgs.size(); i++) {
 		// sumAvgs += splitAvgs.get(i);

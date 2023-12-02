@@ -15,7 +15,7 @@ public interface Classifier {
 	 * 
 	 * @param data
 	 */
-	public void train(DataSet data);
+	public void train(DataSet data, int indexToRemove);
 	
 	/**
 	 * Classify the example.  Should only be called *after* train has been called.

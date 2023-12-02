@@ -170,15 +170,8 @@ public class GradientDescentClassifier implements Classifier {
 		this.iterations = iterations;
 	}
 
-	public void train(DataSet data) {
+	public void train(DataSet data, int featureToRemove) {
 		initializeWeights(data.getAllFeatureIndices());
-		ArrayList<Integer> blacklist = new ArrayList<>(); 
-		blacklist.add(14); 
-		blacklist.add(15); 
-		blacklist.add(18); 
-		blacklist.add(19); 
-		blacklist.add(20); 
-
 
 		ArrayList<Example> training = (ArrayList<Example>) data.getData().clone();
 		for (int it = 0; it < iterations; it++) {
@@ -186,7 +179,7 @@ public class GradientDescentClassifier implements Classifier {
 			double lossSum = 0.0;
 
 			for (Example e : training) {
-				// e.removeFeature(featureToRemove);
+				e.removeFeature(featureToRemove);
 				double label = e.getLabel();
 				double prediction = getDistanceFromHyperplane(e, weights, b);
 				lossSum += calcLoss(this.chosenLoss, e.getLabel(), prediction);
@@ -199,7 +192,6 @@ public class GradientDescentClassifier implements Classifier {
 							+ this.eta * ((label * featureValue * lossFunc(this.chosenLoss, label, prediction))
 									- (lamda * regularize(this.chosenRegularization, oldWeight)));
 					weights.put(featureIndex, newWeight);
-					//System.out.println("updated: " + newWeight);
 				}
 				b += this.eta * ((label * 1 * lossFunc(this.chosenLoss, label, prediction))
 						- (this.lamda * regularize(this.chosenRegularization, b)));
@@ -250,8 +242,6 @@ public class GradientDescentClassifier implements Classifier {
 	protected static double getDistanceFromHyperplane(Example e, HashMap<Integer, Double> w, double inputB) {
 		double sum = inputB;
 
-		// for(Integer featureIndex: w.keySet()){
-		// only need to iterate over non-zero features
 		for (Integer featureIndex : e.getFeatureSet()) {
 			sum += w.get(featureIndex) * e.getFeature(featureIndex);
 		}
@@ -298,10 +288,8 @@ public class GradientDescentClassifier implements Classifier {
 	 */
 	public static void main(String[] args) {
 		DataSet data = new DataSet("data/diabetesCorrectedLabel.csv", 0);
-		// Collins is cooking
-		// int totalFeatures = data.getAllFeatureIndices().size();
-		// List<Double> accuracies = new ArrayList<Double>();
-		//for (Integer indexToRemove: data.getFeatureMap().keySet()){
+
+		for (Integer indexToRemove: data.getFeatureMap().keySet()){
 			GradientDescentClassifier gdescent = new GradientDescentClassifier();
 			DataSet someCopy = new DataSet(data.getFeatureMap()); // copy of the original
 			CrossValidationSet crossValidation = new CrossValidationSet(data, 10, true);
@@ -321,7 +309,7 @@ public class GradientDescentClassifier implements Classifier {
 				ExampleNormalizer exampleNormalizer = new ExampleNormalizer();
 				featureNormalizer.preprocessTrain(dataSplit.getTrain());
 				exampleNormalizer.preprocessTrain(dataSplit.getTrain());
-				gdescent.train(dataSplit.getTrain());
+				gdescent.train(dataSplit.getTrain(), indexToRemove);
 				
 			// gdescent.train(someCopy);
 			// gdescent.classify(dataSplit.getTrain().getData().get(63000));
@@ -345,7 +333,8 @@ public class GradientDescentClassifier implements Classifier {
 			splitAvgs.add(avg); // will hold the avg accuragy from thr ith split
 			break; // remove when want to get total fold averages
 		}
-		System.out.println("current average: " + splitAvgs);
+		System.out.println("Average without index: " + indexToRemove + " is: " + splitAvgs);
+		}
 	}
 	// double sumAvgs = 0.0;
 	// for (int i = 0; i < splitAvgs.size(); i++) {

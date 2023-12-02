@@ -170,8 +170,15 @@ public class GradientDescentClassifier implements Classifier {
 		this.iterations = iterations;
 	}
 
-	public void train(DataSet data, int featureToRemove) {
+	public void train(DataSet data) {
 		initializeWeights(data.getAllFeatureIndices());
+		ArrayList<Integer> blacklist = new ArrayList<>(); 
+		blacklist.add(14); 
+		blacklist.add(15); 
+		blacklist.add(18); 
+		blacklist.add(19); 
+		blacklist.add(20); 
+
 
 		ArrayList<Example> training = (ArrayList<Example>) data.getData().clone();
 		for (int it = 0; it < iterations; it++) {
@@ -179,20 +186,21 @@ public class GradientDescentClassifier implements Classifier {
 			double lossSum = 0.0;
 
 			for (Example e : training) {
-				e.removeFeature(featureToRemove);
+				// e.removeFeature(featureToRemove);
 				double label = e.getLabel();
 				double prediction = getDistanceFromHyperplane(e, weights, b);
 				lossSum += calcLoss(this.chosenLoss, e.getLabel(), prediction);
 
 				for (Integer featureIndex : e.getFeatureSet()) {
+					
 					double oldWeight = weights.get(featureIndex);
 					double featureValue = e.getFeature(featureIndex);
 					double newWeight = oldWeight
 							+ this.eta * ((label * featureValue * lossFunc(this.chosenLoss, label, prediction))
 									- (lamda * regularize(this.chosenRegularization, oldWeight)));
 					weights.put(featureIndex, newWeight);
+					//System.out.println("updated: " + newWeight);
 				}
-
 				b += this.eta * ((label * 1 * lossFunc(this.chosenLoss, label, prediction))
 						- (this.lamda * regularize(this.chosenRegularization, b)));
 			}
@@ -289,60 +297,60 @@ public class GradientDescentClassifier implements Classifier {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		DataSet data = new DataSet("data/diabetesDecimalLabel.csv", 0);
+		DataSet data = new DataSet("data/correctedLabels.csv", 0);
 		// Collins is cooking
-		int totalFeatures = data.getAllFeatureIndices().size();
-		//List<Double> accuracies = new ArrayList<Double>();
-
-		for (Integer indexToRemove: data.getFeatureMap().keySet()){ 
-			DataSet someCopy = new DataSet(data.getFeatureMap()); // copy of the original data set 
+		// int totalFeatures = data.getAllFeatureIndices().size();
+		// List<Double> accuracies = new ArrayList<Double>();
+		//for (Integer indexToRemove: data.getFeatureMap().keySet()){
 			GradientDescentClassifier gdescent = new GradientDescentClassifier();
-			
+			DataSet someCopy = new DataSet(data.getFeatureMap()); // copy of the original
 			CrossValidationSet crossValidation = new CrossValidationSet(data, 10, true);
 			gdescent.setLoss(HINGE_LOSS);
 			gdescent.setIterations(30);
-			// gdescent.setEta(0.01);
-			// gdescent.setLamda(0.05);
 			gdescent.setRegularization(NO_REGULARIZATION);
-	
+			
+			gdescent.setEta(0.01);
+			gdescent.setLamda(0.05);
 			// run for the number of splits
 			ArrayList<Double> splitAvgs = new ArrayList<Double>();
 			for (int i = 0; i < crossValidation.getNumSplits(); i++) {
 				DataSetSplit dataSplit = crossValidation.getValidationSet(i);
-	
+				
 				// preprocess data
 				FeatureNormalizer featureNormalizer = new FeatureNormalizer();
 				ExampleNormalizer exampleNormalizer = new ExampleNormalizer();
 				featureNormalizer.preprocessTrain(dataSplit.getTrain());
 				exampleNormalizer.preprocessTrain(dataSplit.getTrain());
-			
-				gdescent.train(someCopy, indexToRemove);
-			
-				double allAccuracy = 0.0;
-	
-				// runs classifier 100 times to find accuracy
-				for (int j = 0; j < 100; j++) {
-					double correctCount = 0.0;
-					for (Example e : dataSplit.getTrain().getData()) {
-						double prediction = gdescent.classify(e);
-						if (prediction == e.getLabel()) {
-							correctCount += 1;
-						}
+				gdescent.train(dataSplit.getTrain());
+				
+			// gdescent.train(someCopy);
+			// gdescent.classify(dataSplit.getTrain().getData().get(63000));
+
+			double allAccuracy = 0.0;
+
+			// runs classifier 100 times to find accuracy
+			//for (int j = 0; j < 100; j++) {
+				double correctCount = 0.0;
+				for (Example e : dataSplit.getTrain().getData()) {
+					double prediction = gdescent.classify(e);
+					// System.out.println("prediction:" + prediction);
+					if (prediction == e.getLabel()) {
+						correctCount += 1;
 					}
-					double currentAccuracy = correctCount / dataSplit.getTrain().getData().size();
-					allAccuracy += currentAccuracy;
 				}
-				double avg = allAccuracy / 100;
-				splitAvgs.add(avg); // will hold the avg accuragy from thr ith split
-				break; // remove when want to get total fold averages
-			}
-			//System.out.println("current average without index: " + indexToRemove + " is: "+  splitAvgs);
+				double currentAccuracy = correctCount / dataSplit.getTrain().getData().size();
+				allAccuracy += currentAccuracy;
+			//}
+			double avg = allAccuracy;
+			splitAvgs.add(avg); // will hold the avg accuragy from thr ith split
+			break; // remove when want to get total fold averages
 		}
-		// double sumAvgs = 0.0;
-		// for (int i = 0; i < splitAvgs.size(); i++) {
-		// sumAvgs += splitAvgs.get(i);
-		// }
-		// System.out.println(sumAvgs / crossValidation.getNumSplits());
-		// }
+		System.out.println("current average: " + splitAvgs);
 	}
+	// double sumAvgs = 0.0;
+	// for (int i = 0; i < splitAvgs.size(); i++) {
+	// sumAvgs += splitAvgs.get(i);
+	// }
+	// System.out.println(sumAvgs / crossValidation.getNumSplits());
+	// }
 }

@@ -45,8 +45,11 @@ public class Example {
 	 *
 	 * @param featureNum the index of the feature to be removed
 	 */
-	public void removeFeature(int featureNum) {
+	public Double removeFeature(int featureNum) {
+		double featureVal = sparseData.get(featureNum);
 		sparseData.remove(featureNum);
+		return featureVal;
+
 	}
 
 	/**

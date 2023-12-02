@@ -297,7 +297,7 @@ public class GradientDescentClassifier implements Classifier {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		DataSet data = new DataSet("data/correctedLabels.csv", 0);
+		DataSet data = new DataSet("data/diabetesCorrectedLabel.csv", 0);
 		// Collins is cooking
 		// int totalFeatures = data.getAllFeatureIndices().size();
 		// List<Double> accuracies = new ArrayList<Double>();

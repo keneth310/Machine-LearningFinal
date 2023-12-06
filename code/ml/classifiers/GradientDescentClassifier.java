@@ -22,7 +22,7 @@ import ml.data.FeatureNormalizer;
  * Gradient descent classifier allowing for two different loss functions and
  * three different regularization settings.
  * 
- * @author dkauchak and Brisa Salazar and Kenneth Gonzalez
+ * @author dkauchak and Brisa Salazar and Kenneth Gonzalez and Collins Kariuki
  *
  */
 public class GradientDescentClassifier implements Classifier {

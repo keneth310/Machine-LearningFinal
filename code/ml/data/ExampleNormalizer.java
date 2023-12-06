@@ -3,6 +3,12 @@ package ml.data;
 import java.util.ArrayList;
 import java.util.Set;
 
+/**
+ * Class that preprocess data
+ * 
+ * @author Collins Kariuki
+ *
+ */
 public class ExampleNormalizer implements DataPreprocessor {
 
     @Override
